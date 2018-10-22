@@ -3,18 +3,18 @@
     // for the documentation about the tasks.json format
     "version": "2.0.0",
     "tasks": [
-        {
-            // Really a test
-            "label": "echo",
-            "type": "shell",
-            "command": "echo Hello",
-            "group":"test"
-        },
+        // {
+        //     // Really a test
+        //     "label": "echo",
+        //     "type": "shell",
+        //     "command": "echo Hello",
+        //     "group":"test"
+        // },
         // I will write pgtunnel functionality in powershell and call powersehll from here
         {
             "label": "OpenSSHTunnel",
             "type":"shell",
-            "command":"bash -c 'echo hello'",
+            "command":"./sshTunnel.ps1 start",
             "group":"none",
             "presentation": {
                 "echo": true,
@@ -27,7 +27,7 @@
         {
             "label": "CloseSSHTunnel",
             "type":"shell",
-            "command":"bash -c 'echo pgtunnel stop'",
+            "command":"./sshTunnel.ps1 stop",
             "group":"none"
         }
 
