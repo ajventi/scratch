@@ -1,9 +1,12 @@
 # How to get command line arguments
 # Should be start|stop|restart|status
+[CmdletBinding()]
 param (
-    [string]$command="status"
+    [string]$command="status",
+    [int]$RemotePort=5432,
+    [int]$LocalPort=5432,
+    [string]$RemoteHost="vinho"
 )
-
 
 # The wrapper to the bash script
 # $validCommand = ("start","stop","restart","status") -contains $command
@@ -16,10 +19,10 @@ param (
 # Doing it in powershell:
 
 # These should be parameters ...
-$PGPort = 5432
-$LocalPort = $PGPort
-$RemoteHost = "vinho"
-$TunnelCmd="ssh -fTNL localhost:${LocalPort}:localhost:${PGPort} $RemoteHost"
+# $RemotePort = 5432
+# $LocalPort = $RemotePort
+# $RemoteHost = "vinho"
+$TunnelCmd="ssh -fTNL localhost:${LocalPort}:localhost:${RemotePort} $RemoteHost"
 
 
 # function check_status {
