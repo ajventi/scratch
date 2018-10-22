@@ -19,17 +19,30 @@ param (
 # Doing it in powershell:
 
 $TunnelCmd="ssh -fTNL localhost:${LocalPort}:localhost:${RemotePort} $RemoteHost"
-function get-TunnelStatus () {
+
+function get-TunnelStatus {
     Get-Process | Where-Object { $_.ProcessName -eq "ssh" }
 }
 
 
 switch ($command) {
-    "start" { Write-Output "start" }
-    "stop"  { Write-Output "Stop" }
-    "restart" { Write-Output "restart" }
+    "start" { 
+        bash -c $TunnelCmd
+        Write-Output "Opened Tunnel to $RemoteHost on port $LocalPort"
+    }
+    "stop"  {
+        $proc = get-TunnelStatus
+        if ($proc -ne $NULL) { 
+            $proc.kill()
+        }
+        Write-Output "Tunnel is closed"
+    }
+    "restart" {
+        # I guess this is where other functions are needed
+        Write-Debug "restart" 
+    }
     "status" { 
-        $proc = get-TunnelStatus #Why do I have to pass $Null?
+        $proc = get-TunnelStatus 
         if ($proc -eq $Null) {
             Write-Output "Tunnel is not running"
         } else {
