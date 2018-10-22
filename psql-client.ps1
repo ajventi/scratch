@@ -37,8 +37,6 @@ Process {
     $lines | Format-Table
 }
 
-#Do things with $reader here
-# Look at https://stackoverflow.com/questions/1184893/how-to-loop-datareader-and-create-datatable-in-powershell
 End {
     $DBConn.Close()
 }
