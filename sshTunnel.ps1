@@ -1,5 +1,19 @@
-# How to get command line arguments
-# Should be start|stop|restart|status
+<#
+.SYNOPSIS
+    Control SSH Tenneling to remote Server
+.DESCRIPTION
+    Uses Linux bash to establish SSH tunnel.
+.PARAMETER command 
+    must be one of START, STOP, RESTART OR STATUS
+.PARAMETER RemotePort 
+    Remote port to forward to loacl computer Default is 5432
+.PARAMETER LocalPort
+    Local Port for forwarding Default 5432
+.PARAMETER RemoteHost
+    DEFAULT is vinho
+#>
+
+
 [CmdletBinding()]
 param (
     [string]$command="status",
