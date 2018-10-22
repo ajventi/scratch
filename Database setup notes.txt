@@ -1,0 +1,43 @@
+Connecting to Vinho Host: 
+
+Keyfile is Vinho-key1.pem
+
+SSH Connection: 
+the pgtunnel script works
+
+$ ssh -i Vinho-key1.pem ajv@ec2-107-21-218-23.compute-1.amazonaws.com
+
+Tunnelling and using
+
+database connection
+
+$ psql -p5432 -hlocalhost -Uajv vvinves
+
+
+**** Ideas moving forward:
+
+* Powershell SQL queries:
+
+The SqlClient object seems to be the thing
+
+> $foo = new-object -typename System.Data.SqlClient.sqlconnection
+> get-member -InputObject $foo
+
+This seems to be only for MSSQL  (from .NET docs)
+"A SqlConnection object represents a unique session to a SQL Server data source. With a client/server database system, it is equivalent to a network connection to the server. SqlConnection is used together with SqlDataAdapter and SqlCommand to increase performance when connecting to a Microsoft SQL Server database. For all third-party SQL Server products and other OLE DB-supported data sources, use OleDbConnection. "
+
+doc: 
+
+https://docs.microsoft.com/en-us/dotnet/api/system.data.oledb.oledbconnection?view=netframework-4.7.2
+
+
+- In reading it seems this can also connect to excel? for input?
+
+Example of postgres connecting: 
+https://stackoverflow.com/questions/9217650/connect-to-remote-postgresql-database-using-powershell
+
+
+---- Details
+- I have installed the postgres ODBC drivers: https://odbc.postgresql.org/
+- Enabled using Start > Search > ODBC > UserDSN > Add/Configure
+- There are individual connection details there
