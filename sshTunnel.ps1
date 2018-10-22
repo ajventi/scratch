@@ -18,27 +18,18 @@ param (
 
 # Doing it in powershell:
 
-# These should be parameters ...
-# $RemotePort = 5432
-# $LocalPort = $RemotePort
-# $RemoteHost = "vinho"
 $TunnelCmd="ssh -fTNL localhost:${LocalPort}:localhost:${RemotePort} $RemoteHost"
-
-
-# function check_status {
-#     PID=`ps aux | grep "$TUNNEL" | grep -v 'grep' | awk '{print $2}'`
-# }
-
-function get-TunnelStatus (){
+function get-TunnelStatus () {
     Get-Process | Where-Object { $_.ProcessName -eq "ssh" }
 }
 
-switch ($command){
+
+switch ($command) {
     "start" { Write-Output "start" }
     "stop"  { Write-Output "Stop" }
     "restart" { Write-Output "restart" }
     "status" { 
-        $proc = get-TunnelStatus(1) #Why do I have to pass $Null?
+        $proc = get-TunnelStatus #Why do I have to pass $Null?
         if ($proc -eq $Null) {
             Write-Output "Tunnel is not running"
         } else {
