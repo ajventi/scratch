@@ -46,7 +46,7 @@ switch ($command) {
     }
     "stop"  {
         $proc = get-TunnelStatus
-        if ($proc -ne $NULL) { 
+        if ($null -ne $proc) { 
             $proc.kill()
         }
         Write-Output "Tunnel is closed"
@@ -57,7 +57,7 @@ switch ($command) {
     }
     "status" { 
         $proc = get-TunnelStatus 
-        if ($proc -eq $Null) {
+        if ( $null -eq $proc ) {
             Write-Output "Tunnel is not running"
         } else {
             $id = $proc.Id
