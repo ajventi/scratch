@@ -13,6 +13,8 @@
     DEFAULT is vinho
 #>
 
+## TODO:
+# Manipulate desktop shortcut
 
 [CmdletBinding()]
 param (
@@ -66,14 +68,3 @@ switch ($command) {
     }
     default { Write-Output "INVALID COMMAND"}
 }
-
-
-# function open_tunnel {
-#     $TUNNEL && \
-# 	echo "Opened ssh postgresql Tunnel to $HOST on port $LOCAL_PORT"
-# }
-
-# function close_tunnel {
-#     kill $PID && echo "closed ssh tunnel to $HOST on port $LOCAL_PORT"
-# }
-
