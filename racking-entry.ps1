@@ -63,6 +63,8 @@ class RackingEntry {
             $cmd.CommandText += " RETURNING id;"
             $this._debug = $cmd.CommandText
             $rdr = $cmd.ExecuteReader()
+            $rdr.read()
+            $this._debug = $rdr.GetName(0)
             $this._newIds += $rdr.GetInt32(0)
             $rdr.close()
         }   
