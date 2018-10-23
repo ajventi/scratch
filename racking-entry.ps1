@@ -3,9 +3,23 @@ class RackingEntry {
     [System.Collections.Hashtable]$blendComponents
     [string]$date
     [int] hidden $_blendId
+    [int[]] hidden $_newIds
+    [string] $_debug
+
     [int] BlendID () {
-        return $this._blendId
+        if ($this._blendId -ne 0) { return $this._blendId }
+        elseif ($this.blendComponents.Count -eq 1) {
+            # redundant code !!!
+            $k = @(0)
+            $this.blendComponents.Keys.CopyTo($k,0)
+            $this._blendId = $k[0]
+            return $this._blendId
+        } else {
+            # You have to makeNewBlend
+            return $null
+        }
     }
+    
     [int] makeNewBlend ([string] $name, [string] $color, [int] $year) {
         if ($this._blendId -ne 0) { return $this._blendId }
         if ($this.blendComponents.Count -eq 1) {
@@ -21,13 +35,38 @@ class RackingEntry {
             $this._blendId = $rdr.GetInt32(0)
             $this.blendComponents.keys | ForEach-Object {
                 $cmd.CommandText = 'INSERT INTO blend_component (blend_id, component_blend_id, volume, date)'
-                $cmd.CommandText += 'SELECT $this._blendId, $_, $this.blendComponents.$_, $date;'
+                $cmd.CommandText += 'SELECT $this._blendId, $_, $this.blendComponents.$_, $this.date;'
                 $cmd.ExecuteNonQuery()
             }
             $rdr.Close()
             $cmd.Dispose()
         }
         return $this._blendId
+    }
+
+    # For fixed volume simply pass a string for container ID, otherwise pass a hash {id=, volume=}
+    [int[]] fillContainers ([System.Object[]]$ContainersAndVolumes) {
+        $cmd = $this.transaction.Connection.CreateCommand()
+        $cmd.Transaction = $this.transaction
+        $this._newIds = @()
+        foreach ($c in $ContainersAndVolumes) {
+            $Ldate = $this.date
+            $blendId = $this._blendId
+            $cmd.CommandText = "INSERT INTO bulk_wine (fill_date, blend_id, container_id, volume) SELECT $Ldate, $blendId, "
+            if ($c -is [string]) {
+                $cmd.CommandText += "'$c', NULL"
+            } else {
+                $id = $c.id
+                $vol = $c.volume
+                $cmd.CommandText += "'$id', $vol"
+            }   
+            $cmd.CommandText += " RETURNING id;"
+            $this._debug = $cmd.CommandText
+            $rdr = $cmd.ExecuteReader()
+            $this._newIds += $rdr.GetInt32(0)
+            $rdr.close()
+        }   
+        return $this._newIds
     }
 }
 
@@ -99,18 +138,6 @@ function New-RackingEntry {
     $cmd.Dispose()
 
     return $r
-}
-
-function Set-RackingEntry {
-    <#
-    .SYNOPSIS
-        Finish Entry of cellar racking and blending activity.
-    .DESCRIPTION
-        After Emptying wines, and ensuring a valid blend_id, record the filling of new 
-        bulk_containers.
-
-        Returns list of bulk_ids for new entries
-    #>
 }
 
 function Show-RackingEntry {
