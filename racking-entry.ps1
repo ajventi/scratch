@@ -68,6 +68,19 @@ class RackingEntry {
         }   
         return $this._newIds
     }
+
+    [void] verifyEntry () {
+        # Code to show entries are all good before commit
+    }
+
+    [void] Close ([boolean]$rollback = $false) {
+        if ($rollback -eq $false) {
+            $this.transaction.Commit()
+        } else {
+            $this.transaction.Rollback()
+        }
+    }
+
 }
 
 function ConvertTo-SQL {
@@ -138,17 +151,6 @@ function New-RackingEntry {
     $cmd.Dispose()
 
     return $r
-}
-
-function Show-RackingEntry {
-    <#
-    .SYNOPSIS 
-        Show database inside transaction to validate.
-    #>
-}
-# Hey wait, seems like the RackingEntry class should be doing all of this 
-function Close-RackingEntry {
-
 }
 
 
