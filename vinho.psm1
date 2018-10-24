@@ -1,3 +1,4 @@
+
 <#
 .DESCRIPTION
     Working with the vinho database.
@@ -9,6 +10,10 @@ TODO:
 #>
 
 function New-DBConnection {
+    <#
+    .SYNOPSIS
+        Create, open and return a new connection
+    #>
     [CmdletBinding(SupportsShouldProcess=$true)]
     [OutputType([System.Data.Odbc.OdbcConnection])]
     Param (
@@ -40,9 +45,3 @@ function New-DBConnection {
 }
 
 Export-ModuleMember -Function New-DBConnection
-
-
-function Close-DBConnection {
-
-
-}
