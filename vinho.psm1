@@ -18,30 +18,49 @@ function New-DBConnection {
     [OutputType([System.Data.Odbc.OdbcConnection])]
     Param (
         # Database name
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true,
+            ParameterSetName = "Common")]
+        [ValidateNotNull()]
         [string]
         $database,
+
         # User name
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true,
+            ParameterSetName = "Common")]
+        [ValidateNotNull()]
         [string]
         $uid,
+
         # Optional config file for database and uid
-        [Parameter (Mandatory = $false)]
+        [Parameter (Mandatory = $true,
+            ParameterSetName = "ConfigFiles")]
         [string]
         $IdFile
     )
 
-    Process {
+    Begin {
+        # determine database and username
+        if ($IdFile -ne $null) {
+            write-debug "Reading login information from $IdFile"
+            $args = Get-Content -Path $IdFile | ConvertFrom-Json
+            $database = $args.database
+            $uid = $args.uid
+        } elseif ($database -eq $null) {
+            #   
+        } else {
+            #
+        }
+    }
 
-        # Ensure we have valid database and uid
-        # Look for config files
+    Process {
         $Conn = New-Object System.Data.Odbc.OdbcConnection
-        $Conn.ConnectionString = "Driver={PostgreSQL UNICODE(x64)};database=$database;uid=$uid;"
-        if ($PSCmdlet.ShouldProcess("Connect to DB", "foo:$Conn.ConnectionString")) {
+        $cs = "Driver={PostgreSQL UNICODE(x64)};database=$database;uid=$uid;"
+        if ($PSCmdlet.ShouldProcess("Connect to DB", $cs)) {
+            $Conn.ConnectionString = $cs
             $Conn.Open()
             return $Conn
         } else { return $false }
     }
 }
 
-Export-ModuleMember -Function New-DBConnection
+#Export-ModuleMember -Function New-DBConnection
