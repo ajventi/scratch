@@ -9,7 +9,7 @@ TODO:
 #>
 
 function New-DBConnection {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess=$true)]
     [OutputType([System.Data.Odbc.OdbcConnection])]
     Param (
         # Database name
@@ -25,13 +25,21 @@ function New-DBConnection {
         [string]
         $IdFile
     )
-    # Ensure we have valid database and uid
-    # Look for config files
-    $Conn = New-Object System.Data.Odbc.OdbcConnection
-    $Conn.ConnectionString = "Driver={PostgreSQL UNICODE(x64)};database=$database;uid=$uid;"
-    $Conn.Open()
-    return $Conn
+
+    Process {
+
+        # Ensure we have valid database and uid
+        # Look for config files
+        $Conn = New-Object System.Data.Odbc.OdbcConnection
+        $Conn.ConnectionString = "Driver={PostgreSQL UNICODE(x64)};database=$database;uid=$uid;"
+        if ($PSCmdlet.ShouldProcess("Connect to DB", "foo:$Conn.ConnectionString")) {
+            $Conn.Open()
+            return $Conn
+        } else { return $false }
+    }
 }
+
+Export-ModuleMember -Function New-DBConnection
 
 
 function Close-DBConnection {
