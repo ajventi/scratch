@@ -11,12 +11,32 @@ function New-PGConnection {
     return $Conn
 }
 
+<#
 $Conn = New-PGConnection
 $SupplyIds = @(4014100)
 $entry = New-RackingEntry $Conn $SupplyIds -Date "'2018-09-03'"
 $entry.BlendId()
 $fillers = @(@{'id'='VT-1k5'; 'volume'=1000})
-#$entry.fillContainers($fillers)
+$entry.fillContainers($fillers)
 # Verify all is good
-#$entry.Close()
+$entry.Close()
+#>
+
+
+
+# How I'd like to do it:
+<#
+$args = @{
+    OdbcConnection = New-PGConnection
+    SupplyIds = @(4014100)
+    Date = "'2018-09-03'"
+    FilledContainers = @( @{ id = 'VT-1k5' ; volume = 1000 } )
+    Confirm = $true     # Will need to add SupportsShouldProcess to CmdletBinding
+}
+$entry = New-RackingEntry @args
+# User will be promted for confirmation before committing transactions
+
+#>
+
+
 
