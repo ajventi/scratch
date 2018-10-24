@@ -18,6 +18,8 @@
 
 [CmdletBinding()]
 param (
+    [Parameter()]
+    [ValidateSet("START", "STOP", "STATUS", "RESTART")]
     [string]$command="status",
     [int]$RemotePort=5432,
     [int]$LocalPort=5432,
