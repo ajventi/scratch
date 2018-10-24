@@ -1,3 +1,9 @@
+<#
+TODO:
+* Use parameter sets for different scenarios
+#>
+
+
 class RackingEntry {
     [System.Data.Odbc.OdbcTransaction] $transaction
     [System.Collections.Hashtable]$blendComponents
