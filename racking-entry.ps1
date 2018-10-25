@@ -198,7 +198,8 @@ function New-RackingWorksheet {
             if ($_.GetType() -is [string]) {
                 $query += "$_, NULL"
             } else {
-                $query += "{0}, {1}" -f $_.id, $_.volume
+                #$query += "{0}, {1}" -f $_.id, $_.volume
+                $query += "$($_.id), $($_.volume)"
             }
             $query += " RETURNING container_id, id;"
             return $query
