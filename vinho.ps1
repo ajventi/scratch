@@ -87,6 +87,8 @@ function Import-DBQuery {
     )
     Begin {
         $cmd = $DBConnection.CreateCommand()
+        # Can we also add support to do this in a transaction?
+        # We should try!
     }
 
     Process {
