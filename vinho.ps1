@@ -76,19 +76,32 @@ function Import-DBQuery {
     [OutputType([PSCustomObject[]])]
     Param (
         # Database connection (see New-DBConnection)
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true, ParameterSetName="Basic")]
+        [Alias("Connection", "C")]
         [System.Data.Odbc.OdbcConnection]
         $DBConnection,
 
+        # Database Transaction if performing inside transaction
+        [Parameter(Mandatory=$true, ParameterSetName="Transaction")]
+        [Alias("Transaction","T")]
+        [System.Data.Odbc.OdbcTransaction]
+        $DBTransaction,
+
         # SQL Query
-        [Parameter(Mandatory=$true, ValueFromPipeline=$true)]
+        [Parameter(Mandatory=$true, ValueFromPipeline=$true, Position="1")]
         [string]
         $Query
     )
     Begin {
+        if ($null -ne $DBTransaction) {
+            $DBConnection = $DBTransaction.Connection
+        }
         $cmd = $DBConnection.CreateCommand()
+        $cmd.Transaction = $DBTransaction
         # Can we also add support to do this in a transaction?
         # We should try!
+        # It will require having an option to pass a transaction instead of a connection
+        # as well which will be connected to the new command created
     }
 
     Process {
@@ -109,6 +122,7 @@ function Import-DBQuery {
                 $rowObj = [PSCustomObject]$row
                 $table += $rowObj
             }
+            $reader.Close()
         }
         return $table
     }
