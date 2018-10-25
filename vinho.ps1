@@ -40,27 +40,30 @@ function New-DBConnection {
 
     Begin {
         # determine database and username
-        if ($IdFile -ne $null) {
+        if (($IdFile -ne $null) -and (Test-Path -Path $IdFile -PathType Leaf)) {
             write-debug "Reading login information from $IdFile"
             $args = Get-Content -Path $IdFile | ConvertFrom-Json
             $database = $args.database
             $uid = $args.uid
-        } elseif ($database -eq $null) {
-            #   
-        } else {
-            #
         }
+        # Maybe oneday have something like a .vinho file 
     }
 
     Process {
         $Conn = New-Object System.Data.Odbc.OdbcConnection
         $cs = "Driver={PostgreSQL UNICODE(x64)};database=$database;uid=$uid;"
         if ($PSCmdlet.ShouldProcess("Connect to DB", $cs)) {
+            trap {
+                "OdbcConnection Error: $_" 
+                break
+            }
             $Conn.ConnectionString = $cs
             $Conn.Open()
             return $Conn
-        } else { return $false }
+        } 
+        return $false 
     }
 }
+
 
 #Export-ModuleMember -Function New-DBConnection
