@@ -1,3 +1,4 @@
+#require ./db.ps1
 <#
 TODO:
 * Use parameter sets for different scenarios
@@ -98,6 +99,8 @@ function ConvertTo-SQL {
     $str = ConvertTo-Json $TextList -Compress
     return $str.Replace("[","(").Replace("]",")")
 }
+# 
+
 function New-RackingEntry {
     <#  
     .SYNOPSIS 
@@ -161,4 +164,46 @@ function New-RackingEntry {
     return $r
 }
 
+function New-RackingWorksheet {
+    [CmdletBinding()]
+    [OutputType([System.Data.Odbc.OdbcTransaction])]
+    Param (
+        [Parameter(Mandatory=$true)]
+        [System.Data.Odbc.OdbcConnection]
+        $DBConnection,
+        
+        [Parameter(Mandatory=$true)]
+        [int[]]
+        $InputIds,
 
+        [Parameter(Mandatory=$true)]
+        [System.Object[]]
+        $FilledContainers,
+
+        [Parameter(Mandatory=$false)]
+        [string]
+        $Date = 'CURRENT_DATE'
+    )
+    Process {
+        $trans = $DBConnection.BeginTransaction()
+        $ids = ConvertTo-SQL($InputIDs)
+        $CommandText = "UPDATE bulk_wine SET EMPTY_DATE = $Date"
+        $CommandText += " WHERE id IN $ids RETURNING id, blend_id, volume;"
+        $rows = Import-DBQuery -Transaction $trans $CommandText
+        if (($rows | Select-Object -Property blend_id -Unique).count) -ne 1) {
+            throw "There must be one blend, no more, no less"
+        }
+        $FillCommands = $FilledContainers | ForEach-Object {
+            $query = "INSERT INTO bulk_wine (Date, Container_ID, Volume) SELECT $Date, "
+            if ($_.GetType() -is [string]) {
+                $query += "$_, NULL"
+            } else {
+                $query += "{0}, {1}" -f $_.id, $_.volume
+            }
+            $query += " RETURNING container_id, id;"
+            return $query
+        }
+        $rows = $FillCommands | Import-DBQuery -Transaction $trans 
+        return $transaction
+    }
+}
