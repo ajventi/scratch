@@ -73,7 +73,7 @@ function Import-DBQuery {
         Perform a query on the database and receive results
     #>
     [CmdletBinding(SupportsShouldProcess=$true)]
-    [OutputType([System.Object[]])]
+    [OutputType([PSCustomObject[]])]
     Param (
         # Database connection (see New-DBConnection)
         [Parameter(Mandatory=$true)]
