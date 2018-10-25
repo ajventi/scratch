@@ -204,6 +204,6 @@ function New-RackingWorksheet {
             return $query
         }
         $rows = $FillCommands | Import-DBQuery -Transaction $trans 
-        return $transaction
+        return $trans
     }
 }
