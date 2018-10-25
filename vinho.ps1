@@ -40,11 +40,13 @@ function New-DBConnection {
 
     Begin {
         # determine database and username
-        if (($IdFile -ne $null) -and (Test-Path -Path $IdFile -PathType Leaf)) {
-            write-debug "Reading login information from $IdFile"
-            $args = Get-Content -Path $IdFile | ConvertFrom-Json
-            $database = $args.database
-            $uid = $args.uid
+        if ($IdFile.Length -gt 0) {
+            if (Test-Path -Path $IdFile -PathType Leaf) {
+                write-debug "Reading login information from $IdFile"
+                $args = Get-Content -Path $IdFile | ConvertFrom-Json
+                $database = $args.database
+                $uid = $args.uid
+            }
         }
         # Maybe oneday have something like a .vinho file 
     }
@@ -65,5 +67,53 @@ function New-DBConnection {
     }
 }
 
+function Import-DBQuery {
+    <#
+    .SYNOPSIS 
+        Perform a query on the database and receive results
+    #>
+    [CmdletBinding(SupportsShouldProcess=$true)]
+    [OutputType([System.Object[]])]
+    Param (
+        # Database connection (see New-DBConnection)
+        [Parameter(Mandatory=$true)]
+        [System.Data.Odbc.OdbcConnection]
+        $DBConnection,
+
+        # SQL Query
+        [Parameter(Mandatory=$true, ValueFromPipeline=$true)]
+        [string]
+        $Query
+    )
+    Begin {
+        $cmd = $DBConnection.CreateCommand()
+    }
+
+    Process {
+        trap { "ODBC Read Error: $_" }
+        if ($PSCmdlet.ShouldProcess($Query)) {
+            $cmd.CommandText = $Query  
+            $reader = $cmd.ExecuteReader()
+            $columnNames = @()
+            for ($i = 0; $i -lt $reader.FieldCount; $i++) {
+                $columnNames += $reader.GetName($i)
+            }
+            $table = @()   
+            while ($reader.Read()) {
+                $row = @{}
+                for ($i = 0; $i -lt $reader.FieldCount; $i++) {
+                    $row[$reader.GetName($i)] = $reader.GetValue($i)
+                }
+                $rowObj = [PSCustomObject]$row
+                $table += $rowObj
+            }
+        }
+        return $table
+    }
+
+    End {
+        $cmd.Dispose()
+    }
+}
 
 #Export-ModuleMember -Function New-DBConnection
