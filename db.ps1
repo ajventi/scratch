@@ -71,6 +71,8 @@ function Import-DBQuery {
     <#
     .SYNOPSIS 
         Perform a query on the database and receive results
+    .BUGS
+        Presently this cannot handle commands spanning multiple lines, it's dumb
     #>
     [CmdletBinding(SupportsShouldProcess=$true)]
     [OutputType([PSCustomObject[]])]
