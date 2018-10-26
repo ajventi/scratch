@@ -93,3 +93,18 @@ Import-DBQuery -Transaction $transaction "INSERT INTO batch_creation_entry (name
 Import-DBQuery -DBTransaction $transaction "SELECT * FROM Batch;" 
 Import-DBQuery -DBTransaction $transaction "UPDATE material_received SET open = false WHERE open;"
 
+# 2018-10-11 
+# A Simple Racking
+$date = "'2018-09-11'"
+
+$targets = Import-DBQuery -c $Vinho "SELECT bulk_id, volume FROM bulk_inventory WHERE blend_id = 2016021;"
+$emptied = $targets.bulk_id
+$volume = $targets.volume | ForEach-Object -Begin { $sum = 0 } -Process { $sum += $_ } -End { $sum }
+$filled = @(@{id="VT-2k2"; volume=$volume})
+$transaction = New-RackingWorksheet -DBConnection $Vinho -InputIds $emptied -date $date -FilledContainers $filled
+
+#Verify 
+Import-DBQuery -Transaction $transaction "SELECT * FROM Bulk_inventory where blend_id = 2016021;" 
+# Success
+#$transaction.commit()
+
