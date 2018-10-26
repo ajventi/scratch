@@ -104,6 +104,7 @@ function Import-DBQuery {
         # We should try!
         # It will require having an option to pass a transaction instead of a connection
         # as well which will be connected to the new command created
+        $returnTables = @()
     }
 
     Process {
@@ -125,12 +126,19 @@ function Import-DBQuery {
                 $table += $rowObj
             }
             $reader.Close()
+        } else {
+            $table = @([PSCustomObject]@{
+                id = "Whatif Table Output"
+                query = $Query
+            })
         }
-        return $table
+        $returnTables += $null
+        $returnTables[$returnTables.length-1] = $table
     }
 
     End {
         $cmd.Dispose()
+        return $returnTables
     }
 }
 
