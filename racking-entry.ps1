@@ -1,4 +1,4 @@
-#require ./db.ps1
+#requires ./db.ps1
 <#
 TODO:
 * Use parameter sets for different scenarios
@@ -63,9 +63,7 @@ class RackingEntry {
             if ($c -is [string]) {
                 $cmd.CommandText += "'$c', NULL"
             } else {
-                $id = $c.id
-                $vol = $c.volume
-                $cmd.CommandText += "'$id', $vol"
+                $cmd.CommandText += "'$($c.id)', $($c.vol)"
             }   
             $cmd.CommandText += " RETURNING id;"
             $this._debug = $cmd.CommandText
