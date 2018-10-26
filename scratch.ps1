@@ -2,15 +2,6 @@
 # Output CSV in nice table :
 # Import-Csv .\sampletable.csv | format-table
 
-# Also try format-list (for full detail)
-$Conn.Close()
-function New-PGConnection {
-    $Conn = New-Object System.Data.Odbc.OdbcConnection
-    $Conn.ConnectionString = "Driver={PostgreSQL UNICODE(x64)};database=vvinves;uid=ajv;"
-    $Conn.Open()
-    return $Conn
-}
-
 <#
 $Conn = New-PGConnection
 $SupplyIds = @(4014100)
@@ -37,6 +28,47 @@ $entry = New-RackingEntry @args
 # User will be promted for confirmation before committing transactions
 
 #>
+
+# Working = 2018-09-05
+#
+
+#requires db.ps1
+$Vinho = New-DBConnection -IdFile .\dbprofile.json
+$date = "'2018-09-05'"
+$bulkId = 4014101
+
+$transaction = $Vinho.BeginTransaction()
+$newLabel = "INSERT INTO wine_label (name, vintage, blend_id, bottle_volume, color) SELECT 'Vino Rosso', NULL, blend_id, .375, 'RED' FROM bulk_wine WHERE id = $bulkId RETURNING id;"
+
+$labelRow = Import-DBQuery -DBTransaction $transaction -Query $newLabel
+
+$bottlingEntry = "INSERT INTO bottled_wine (label_id, quantity, date, type) SELECT $($labelRow.id), $(99*12), $date, 'BOTTLING';"
+# This is a simple command with no return results, do we need a different command?
+Import-DBQuery -Transaction $transaction -Query $bottlingEntry
+
+Import-DBQuery -t $transaction -Query "UPDATE bulk_wine SET empty_date = $date WHERE id = $bulkId;" 
+$newBulkRow = Import-DBQuery -t $transaction -Query "INSERT INTO bulk_wine (fill_date, blend_id, container_id, volume) SELECT $date, blend_id, 'VT-1k5', 544 FROM bulk_wine where id = $bulkId RETURNING id;" 
+
+# Verify and commit
+Import-DBQuery -t $transaction "SELECT * from Bulk_wine where blend_id = 2014032;" | Out-GridView
+Import-DBQuery -t $transaction "SELECT * FROM bottled_wine WHERE label_id = $($labelRow.id);" 
+
+#$transaction.Commit()
+
+# 2018-09-07
+$BulkId = 4014102
+$blendId = $(Import-DBQuery -c $Vinho "SELECT blend_id FROM bulk_wine WHERE id = $bulkId;").blend_id
+$Date = "'2018-09-06'"
+
+$transaction = $Vinho.BeginTransaction()
+$labelRow = Import-DBQuery -t $transaction -Query "INSERT INTO wine_label (name, vintage, blend_id, color) SELECT 'Patience', NULL, $blendId, 'RED' RETURNING *;"
+Import-DBQuery -t $transaction -Query "INSERT INTO bottled_wine (label_id, quantity, date, type) SELECT $($labelRow.id), $(12*60), $date, 'BOTTLING';" -WhatIf
+Import-DBQuery -t $transaction -Query "UPDATE bulk_wine SET empty_date = $date WHERE id = $bulkId;"
+# Verify and commit
+Import-DBQuery -t $transaction -Query "SELECT * FROM bulk_wine WHERE blend_id = $blendId;" | Out-GridView
+Import-DBQuery -t $transaction "SELECT * FROM bottled_wine WHERE label_id = $($labelRow.id);" 
+
+#$transaction.Commit()
 
 
 
