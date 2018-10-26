@@ -70,5 +70,26 @@ Import-DBQuery -t $transaction "SELECT * FROM bottled_wine WHERE label_id = $($l
 
 #$transaction.Commit()
 
+# Fruit Received
+$fruitIn = @(
+    @{ date = '2018-09-04'; weight = 622 },
+    @{ date = '2018-09-06'; weight = 659 }
+)
 
+$commands = $fruitIn | ForEach-Object {
+    "INSERT INTO material_received (date, variety, vineyard, weight) SELECT '$($_.date)', 'Marquette', 'MAR', $($_.weight) RETURNING *;"
+}
+$transaction = $Vinho.BeginTransaction()
+$rows = $commands | Import-DBQuery -t $transaction 
+Import-DBQuery -t $transaction "SELECT * FROM material_received WHERE open;"
+
+#$transaction.commit()
+
+# Create our first batch
+$fruitIds = "'{" + ([string[]] (Import-DBQuery -c $Vinho "SELECT id FROM material_received WHERE open;").id -join ',') + "}'"
+$transaction = $Vinho.BeginTransaction()
+
+Import-DBQuery -Transaction $transaction "INSERT INTO batch_creation_entry (name, date, components) SELECT 'Marquette', '2018-09-07', $fruitIds;" -whatif
+Import-DBQuery -DBTransaction $transaction "SELECT * FROM Batch;" 
+Import-DBQuery -DBTransaction $transaction "UPDATE material_received SET open = false WHERE open;"
 
