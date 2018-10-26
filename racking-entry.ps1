@@ -1,4 +1,4 @@
-#requires ./db.ps1
+#requires -Modules "./db.ps1"
 <#
 TODO:
 * Use parameter sets for different scenarios
@@ -188,7 +188,7 @@ function New-RackingWorksheet {
         $CommandText = "UPDATE bulk_wine SET EMPTY_DATE = $Date"
         $CommandText += " WHERE id IN $ids RETURNING id, blend_id, volume;"
         $rows = Import-DBQuery -Transaction $trans $CommandText
-        if (($rows | Select-Object -Property blend_id -Unique).count) -ne 1) {
+        if (($rows | Select-Object -Property blend_id -Unique).count -ne 1) {
             throw "There must be one blend, no more, no less"
         }
         $FillCommands = $FilledContainers | ForEach-Object {
