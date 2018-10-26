@@ -4,7 +4,7 @@
         {
             "label": "OpenSSHTunnel",
             "type":"shell",
-            "command":"./sshTunnel.ps1 start",
+            "command":"./work/sshTunnel.ps1 start",
             "group":"none",
             "presentation": {
                 "echo": true,
@@ -17,7 +17,7 @@
         {
             "label": "CloseSSHTunnel",
             "type":"shell",
-            "command":"./sshTunnel.ps1 stop",
+            "command":"./work/sshTunnel.ps1 stop",
             "group":"none"
         }
 
