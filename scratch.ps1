@@ -1,3 +1,4 @@
+#requires -Modules ./postgres
 
 # Output CSV in nice table :
 # Import-Csv .\sampletable.csv | format-table

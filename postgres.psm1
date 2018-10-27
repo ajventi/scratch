@@ -99,59 +99,48 @@ function Import-DBQuery {
         $DBTransaction,
 
         # SQL Query
-        [Parameter(Mandatory=$true, ValueFromPipeline=$true, Position="1")]
+        [Parameter(Mandatory=$true, Position="1")]
         [string]
         $Query
     )
-    Begin {
-        if ($null -ne $DBTransaction) {
-            $DBConnection = $DBTransaction.Connection
-        }
-        $cmd = $DBConnection.CreateCommand()
-        $cmd.Transaction = $DBTransaction
-        # Can we also add support to do this in a transaction?
-        # We should try!
-        # It will require having an option to pass a transaction instead of a connection
-        # as well which will be connected to the new command created
-        $returnTables = @()
+    
+    if ($null -ne $DBTransaction) {
+        $DBConnection = $DBTransaction.Connection
     }
+    $cmd = $DBConnection.CreateCommand()
+    $cmd.Transaction = $DBTransaction
 
-    Process {
-        trap { "ODBC Read Error: $_" }
-        if ($PSCmdlet.ShouldProcess($Query)) {
-            $cmd.CommandText = $Query  
-            Write-Information -Msg $Query -Tags "Queries"
-            $reader = $cmd.ExecuteReader()
-            $columnNames = @()
+    trap { "ODBC Read Error: $_" }
+    if ($PSCmdlet.ShouldProcess($Query)) {
+        $cmd.CommandText = $Query  
+        Write-Information -Msg $Query -Tags "Queries"
+        $reader = $cmd.ExecuteReader()
+        $columnNames = @()
+        for ($i = 0; $i -lt $reader.FieldCount; $i++) {
+            $columnNames += $reader.GetName($i)
+        }
+        $table = @()   
+        while ($reader.Read()) {
+            $row = @{}
             for ($i = 0; $i -lt $reader.FieldCount; $i++) {
-                $columnNames += $reader.GetName($i)
+                $row[$reader.GetName($i)] = $reader.GetValue($i)
             }
-            $table = @()   
-            while ($reader.Read()) {
-                $row = @{}
-                for ($i = 0; $i -lt $reader.FieldCount; $i++) {
-                    $row[$reader.GetName($i)] = $reader.GetValue($i)
-                }
-                $rowObj = [PSCustomObject]$row
-                $table += $rowObj
-            }
-            Write-Information -Msg $table -Tags "Results"
-            $reader.Close()
-        } else {
-            # IDK If we should give this fake output when doing whatif or confim testing
-            $table = @([PSCustomObject]@{
-                id = "Whatif Fake Output"
-                query = $Query
-            })
+            $rowObj = [PSCustomObject]$row
+            $table += $rowObj
         }
-        $returnTables += $null
-        $returnTables[$returnTables.length-1] = $table
+        Write-Information -Msg $table -Tags "Results"
+        $reader.Close()
+    } else {
+        # IDK If we should give this fake output when doing whatif or confim testing
+        $table = @([PSCustomObject]@{
+            id = "Whatif Fake Output"
+            query = $Query
+        })
     }
-
-    End {
-        $cmd.Dispose()
-        return $returnTables
-    }
+    $cmd.Dispose()
+    return $table
 }
 
-#Export-ModuleMember -Function New-DBConnection
+Export-ModuleMember -Function New-DBConnection
+Export-ModuleMember -Function Import-DBQuery
+
