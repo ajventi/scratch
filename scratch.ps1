@@ -116,6 +116,7 @@ $emptied = @(4016066, 4017007, 4017008, 4017009) # Taken from notes
 
 # Doing stuff for reals
 $blendName = "Fratelli 2"
+
 $transaction = $Vinho.BeginTransaction()
 $emptyRows = Import-DBQuery -t $transaction ("UPDATE bulk_wine set empty_date = $date where id IN (" + ($emptied -join ",") + ") RETURNING blend_id, volume;") 
 $components = @{}
@@ -129,3 +130,27 @@ $components.keys | ForEach-Object {
 $containerId = "VT-1k5"
 $totalVolume = $components.keys | ForEach-Object -Begin { $s = 0} -Process { $s += $components[$_]} -End {$s}
 $newId = (Import-DBQuery -t $transaction "INSERT INTO bulk_wine (blend_id, container_id, volume, fill_date) SELECT $blendId, '$containerId', $totalVolume, $date RETURNING id;").id
+
+# Now lets verify
+Import-DBQuery -t $transaction "SELECT * FROM bulk_wine WHERE fill_date = $date OR empty_date = $date;" | Out-GridView
+Import-DBQuery -t $transaction "SELECT * FROM blend_component WHERE blend_id = $blendId;" | Out-GridView
+
+$transaction.Commit()
+
+# 2018-09-13 Bottling 
+# 101 cases 2017 Carignane
+
+# I am attempting to make this entry work more progmatic and dependant on specialized functions
+$bottlingInfo = @{
+    date = "'2018-09-13'"
+    quantity = 101*12
+    labelName = "'Carignane'"
+    vintage = 2018
+    bottleVolume = 0.75
+    bulkId = 4016093
+}
+
+# Now to write New-BottlingEntry
+$transaction = New-BottlingEntry -c $Vinho @bottlingInfo -whatif -InformationAction Continue
+
+#$transaction.Commit()
