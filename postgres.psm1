@@ -1,7 +1,6 @@
-
 <#
-.DESCRIPTION
-    Working with the vinho database.
+.SYNOPSIS
+    Some Simple wrappers for using Postgresql via Odbc
 #>
 
 <#
@@ -12,7 +11,7 @@ TODO:
 function New-DBConnection {
     <#
     .SYNOPSIS
-        Create, open and return a new connection
+        Creates, opens and return a new System.Data.Odbc.OdbcConnection
     #>
     [CmdletBinding(SupportsShouldProcess=$true)]
     [OutputType([System.Data.Odbc.OdbcConnection])]
@@ -31,6 +30,13 @@ function New-DBConnection {
         [string]
         $uid,
 
+        # Server Port
+        [Parameter(Mandatory = $false,
+            ParameterSetName = "Common")]
+        [ValidateNotNull()]
+        [int]
+        $port = 5432,
+
         # Optional config file for database and uid
         [Parameter (Mandatory = $true,
             ParameterSetName = "ConfigFiles")]
@@ -42,10 +48,11 @@ function New-DBConnection {
         # determine database and username
         if ($IdFile.Length -gt 0) {
             if (Test-Path -Path $IdFile -PathType Leaf) {
-                write-debug "Reading login information from $IdFile"
+                Write-Verbose "Getting parameters from $IdFile"
                 $args = Get-Content -Path $IdFile | ConvertFrom-Json
                 $database = $args.database
                 $uid = $args.uid
+                $port = $args.port
             }
         }
         # Maybe oneday have something like a .vinho file 
@@ -53,7 +60,7 @@ function New-DBConnection {
 
     Process {
         $Conn = New-Object System.Data.Odbc.OdbcConnection
-        $cs = "Driver={PostgreSQL UNICODE(x64)};database=$database;uid=$uid;"
+        $cs = "Driver={PostgreSQL UNICODE(x64)};database=$database;uid=$uid;port=$port"
         if ($PSCmdlet.ShouldProcess("Connect to DB", $cs)) {
             trap {
                 "OdbcConnection Error: $_" 
@@ -61,9 +68,8 @@ function New-DBConnection {
             }
             $Conn.ConnectionString = $cs
             $Conn.Open()
-            return $Conn
-        } 
-        return $false 
+        }
+        return $Conn
     }
 }
 
@@ -73,6 +79,9 @@ function Import-DBQuery {
         Perform a query on the database and receive results
     .BUGS
         Presently this cannot handle commands spanning multiple lines, it's dumb
+
+    .TODO 
+        Remove pipeline processing, it's making things complex for no reason.
     #>
     [CmdletBinding(SupportsShouldProcess=$true)]
     [OutputType([PSCustomObject[]])]
@@ -111,6 +120,7 @@ function Import-DBQuery {
         trap { "ODBC Read Error: $_" }
         if ($PSCmdlet.ShouldProcess($Query)) {
             $cmd.CommandText = $Query  
+            Write-Information -Msg $Query -Tags "Queries"
             $reader = $cmd.ExecuteReader()
             $columnNames = @()
             for ($i = 0; $i -lt $reader.FieldCount; $i++) {
@@ -125,10 +135,12 @@ function Import-DBQuery {
                 $rowObj = [PSCustomObject]$row
                 $table += $rowObj
             }
+            Write-Information -Msg $table -Tags "Results"
             $reader.Close()
         } else {
+            # IDK If we should give this fake output when doing whatif or confim testing
             $table = @([PSCustomObject]@{
-                id = "Whatif Table Output"
+                id = "Whatif Fake Output"
                 query = $Query
             })
         }

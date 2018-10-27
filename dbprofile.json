@@ -1,4 +1,5 @@
 { 
     "database" : "vvinves",
-    "uid" : "ajv"
+    "uid" : "ajv",
+    "port" : 5432
 }
