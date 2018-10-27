@@ -94,7 +94,7 @@ Import-DBQuery -Transaction $transaction "INSERT INTO batch_creation_entry (name
 Import-DBQuery -DBTransaction $transaction "SELECT * FROM Batch;" 
 Import-DBQuery -DBTransaction $transaction "UPDATE material_received SET open = false WHERE open;"
 
-# 2018-10-11 
+# 2018-09-11 
 # A Simple Racking
 $date = "'2018-09-11'"
 
@@ -109,3 +109,23 @@ Import-DBQuery -Transaction $transaction "SELECT * FROM Bulk_inventory where ble
 # Success
 #$transaction.commit()
 
+# 2018-09-11 A real Blending!
+$date = "'2018-09-11'"
+
+$emptied = @(4016066, 4017007, 4017008, 4017009) # Taken from notes
+
+# Doing stuff for reals
+$blendName = "Fratelli 2"
+$transaction = $Vinho.BeginTransaction()
+$emptyRows = Import-DBQuery -t $transaction ("UPDATE bulk_wine set empty_date = $date where id IN (" + ($emptied -join ",") + ") RETURNING blend_id, volume;") 
+$components = @{}
+$emptyRows | ForEach-Object { $components[$_.blend_id] += $_.volume }
+$blendId = (Import-DBQuery -t $transaction "INSERT INTO blend (name, color, year) SELECT '$blendName', 'RED', 2017 RETURNING id;").id
+
+$components.keys | ForEach-Object {
+    Import-DBQuery -t $transaction "INSERT INTO blend_component (blend_id, component_blend_id, volume, date) SELECT $blendId, $_, $($components[$_]), $date;" 
+}
+
+$containerId = "VT-1k5"
+$totalVolume = $components.keys | ForEach-Object -Begin { $s = 0} -Process { $s += $components[$_]} -End {$s}
+$newId = (Import-DBQuery -t $transaction "INSERT INTO bulk_wine (blend_id, container_id, volume, fill_date) SELECT $blendId, '$containerId', $totalVolume, $date RETURNING id;").id

@@ -104,14 +104,14 @@ function Import-DBQuery {
         $Query
     )
     
-    if ($null -ne $DBTransaction) {
-        $DBConnection = $DBTransaction.Connection
-    }
-    $cmd = $DBConnection.CreateCommand()
-    $cmd.Transaction = $DBTransaction
-
+    
     trap { "ODBC Read Error: $_" }
     if ($PSCmdlet.ShouldProcess($Query)) {
+        if ($null -ne $DBTransaction) {
+            $DBConnection = $DBTransaction.Connection
+        }
+        $cmd = $DBConnection.CreateCommand()
+        $cmd.Transaction = $DBTransaction
         $cmd.CommandText = $Query  
         Write-Information -Msg $Query -Tags "Queries"
         $reader = $cmd.ExecuteReader()
@@ -128,8 +128,9 @@ function Import-DBQuery {
             $rowObj = [PSCustomObject]$row
             $table += $rowObj
         }
-        Write-Information -Msg $table -Tags "Results"
+        Write-Information -Msg $table -Tags "Results" # Not really giving what I want all the time
         $reader.Close()
+        $cmd.Dispose()
     } else {
         # IDK If we should give this fake output when doing whatif or confim testing
         $table = @([PSCustomObject]@{
@@ -137,7 +138,6 @@ function Import-DBQuery {
             query = $Query
         })
     }
-    $cmd.Dispose()
     return $table
 }
 
