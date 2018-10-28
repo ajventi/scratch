@@ -1,5 +1,18 @@
-
+#requires -Modules ./postgres
 function New-BottlingEntry {
+    <#
+    .EXAMPLE
+    $bottlingInfo = @{
+        date = "'2018-09-13'"
+        quantity = 101*12
+        labelName = "'Carignane'"
+        vintage = 2018
+        bottleVolume = 0.75
+        bulkId = 4016093
+    }
+    $c = New-DBConnection -database foobar -uid bazzie
+    $transaction = New-BottlingEntry -c $c @bottlingInfo 
+    #>
     [CmdletBinding(SupportsShouldProcess=$true)]
     [OutputType([System.Data.Odbc.OdbcTransaction])]
     Param (
