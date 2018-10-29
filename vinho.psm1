@@ -1,6 +1,7 @@
 #requires -Modules postgres
 
 $Vinho = [PSCustomObject]@{
+    Version = "0.0.0-dev2018-10-29"
     Connection = [System.Data.Odbc.OdbcConnection] $null
     Transaction = [System.Data.Odbc.OdbcTransaction] $null
 }
