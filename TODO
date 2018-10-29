@@ -1,0 +1,12 @@
+* Scripts to install, cleanup and help during development. 
+    After all this IS powershell, so it shouldn't be such a big deal to make things work
+
+* GUI Report Viewer
+
+* Org mode ? -- I see it exists in a few forms, and it would be nice
+
+* Fork off postgres module -- try to retain history
+
+* Vinho
+    Simplify smaller functions 
+    Make a wrapper class for OdbcConnection to store transaction as well. Perhaps simply have Make-NewDBConnection set some global variables
