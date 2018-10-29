@@ -141,6 +141,12 @@ function Import-DBQuery {
     return $table
 }
 
-Export-ModuleMember -Function New-DBConnection
-Export-ModuleMember -Function Import-DBQuery
+# This should be aware of the double quoting rules in Postgres
+function ConvertTo-SQLString ([string] $date) { ("'" + $date + "'") }
+
+
+@( "New-DBConnection",
+    "Import-DBQuery",
+    "ConvertTo-SQLString" 
+) | ForEach-Object { Export-ModuleMember -Function $_ }
 
