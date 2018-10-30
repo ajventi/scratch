@@ -77,6 +77,7 @@ function Import-VinhoQuery {
 
 # These are all helper functions, probably will be internal in final module
 function Empty-Wines {
+    # We should really check that the wines we are emptying are not already marked empty
     [CmdletBinding(SupportsShouldProcess=$true)]
     Param (
         [int[]] $bulkIds,
@@ -87,6 +88,8 @@ function Empty-Wines {
     $sql += ") RETURNING id, blend_id, volume;"
     if ($PSCmdlet.ShouldProcess("Import-VinhoQuery", $sql)) {
         Import-VinhoQuery $sql
+    } else { 
+        return @(@{id=0; name="Fake data $sql"})
     }
 }
 
