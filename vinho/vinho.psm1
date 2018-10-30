@@ -75,6 +75,20 @@ function Import-VinhoQuery {
     }
 }
 
+# These are all helper functions, probably will be internal in final module
+function Empty-Wines {
+    [CmdletBinding(SupportsShouldProcess=$true)]
+    Param (
+        [int[]] $bulkIds,
+        [string] $date
+    )
+    $sql = "UPDATE bulk_wine SET empty_date = $date WHERE id in ("
+    $sql += $bulkIds -join ','
+    $sql += ") RETURNING id, blend_id, volume;"
+    if ($PSCmdlet.ShouldProcess("Import-VinhoQuery", $sql)) {
+        Import-VinhoQuery $sql
+    }
+}
 
 Export-ModuleMember -Variable Vinho
 
@@ -83,5 +97,6 @@ Export-ModuleMember -Variable Vinho
     "New-VinhoTransaction",
     "Close-VinhoTransaction",
     "Remove-VinhoTransaction",
-    "Import-VinhoQuery"
+    "Import-VinhoQuery",
+    "Empty-Wines"
 ) | ForEach-Object { Export-ModuleMember -Function $_ }
