@@ -120,9 +120,10 @@ Export-ModuleMember -Variable Vinho
 @(
     "Set-VinhoConnection",
     "Import-VinhoQuery",
-    "New-BulkWineEntry",
     "New-VinhoTransaction",
     "Remove-VinhoTransaction",
     "Close-VinhoTransaction",
+    # Helper funcs below probably wont be exported
+    "New-BulkWineEntry",
     "Close-BulkInventory"
 ) | ForEach-Object { Export-ModuleMember -Function $_ }
