@@ -1,5 +1,0 @@
-* postgres.psd1 
-    - Write-Information is not returning the query output properly, just showing sytem objects
-
-    - ConvertTo-SQLString : This doesn't belong here until we can really provide a whole set of methods for converting stuff
-    
