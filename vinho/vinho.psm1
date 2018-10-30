@@ -76,7 +76,7 @@ function Import-VinhoQuery {
 }
 
 # These are all helper functions, probably will be internal in final module
-function Empty-Wines {
+function Close-BulkInventory {
     # We should really check that the wines we are emptying are not already marked empty
     [CmdletBinding(SupportsShouldProcess=$true)]
     Param (
@@ -93,13 +93,36 @@ function Empty-Wines {
     }
 }
 
+function New-BulkWineEntry {
+    [Cmdletbinding(SupportsShouldProcess=$true)]
+    Param (
+        [string] $FillDate,
+        [int] $blendId,
+        [Object[]] $filledContainers
+    )
+    
+    $filledContainers | ForEach-Object {
+        $sql = "INSERT INTO bulk_wine (fill_date, blend_id, container_id"
+        if ($_ -is [string]) {
+            $sql += ") SELECT $fillDate, $blendId, '$_'"
+        } else { #assume it has id and volume properties 
+            $sql += ",volume) SELECT $fillDate, $blendId, '$($_.id)', $($_.volume)"
+        }
+        $sql += " RETURNING container_id, id;"
+        if ($PSCmdlet.ShouldProcess("Import-VinhoQuery", $sql)) {
+            return Import-VinhoQuery $sql
+        }
+    }
+}
+
 Export-ModuleMember -Variable Vinho
 
 @(
     "Set-VinhoConnection",
-    "New-VinhoTransaction",
-    "Close-VinhoTransaction",
-    "Remove-VinhoTransaction",
     "Import-VinhoQuery",
-    "Empty-Wines"
+    "New-BulkWineEntry",
+    "New-VinhoTransaction",
+    "Remove-VinhoTransaction",
+    "Close-VinhoTransaction",
+    "Close-BulkInventory"
 ) | ForEach-Object { Export-ModuleMember -Function $_ }
