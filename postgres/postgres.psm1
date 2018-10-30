@@ -128,6 +128,7 @@ function Import-DBQuery {
             $rowObj = [PSCustomObject]$row
             $table += $rowObj
         }
+        # $table is not showing anything useful, this needs to be improved.
         Write-Information -Msg $table -Tags "Results" # Not really giving what I want all the time
         $reader.Close()
         $cmd.Dispose()
@@ -142,5 +143,7 @@ function Import-DBQuery {
 }
 
 # This should be aware of the double quoting rules in Postgres
+# Actually I have to come up with a more uniform thing
+# Let low level functions do the conversion
 function ConvertTo-SQLString ([string] $date) { ("'" + $date + "'") }
 
