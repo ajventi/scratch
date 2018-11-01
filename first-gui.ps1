@@ -1,16 +1,10 @@
-# See https://blogs.technet.microsoft.com/heyscriptingguy/2014/08/01/ive-got-a-powershell-secret-adding-a-gui-to-scripts/
+[CmdletBinding()]
+Param()
 
-try {
-    Add-Type -AssemblyName PresentationCore, PresentationFramework, WindowsBase, system.windows.forms
-} catch {
-    "Failed to load WPF Assemblies"
-}
+./load-gui.ps1 -Xamlpath '.\first-gui.xaml' -verbose
 
-[xml]$xmlWPF = Get-Content -path "first-gui.xaml"
+$button1.add_Click({
+    $Label1.Content = "Hello World"
+})
 
-$gui = [Windows.Markup.XamlReader]::Load((new-object System.Xml.XmlNodeReader $xmlWPF))
-
-$xmlWPF.SelectNodes("//*[@Name]") | ForEach-Object {
-    Set-Variable -Name ($_.Name) -Value $gui.FindName($_.Name) -Scope Global
-}
-
+$xamGui.ShowDialog() | Out-Null
