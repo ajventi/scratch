@@ -1,0 +1,19 @@
+<?xml version="1.0" standalone="yes"?>
+<VinhoDB>
+  <bulk_wine>
+    <id>4009123</id>
+    <blend_id>2009010</blend_id>
+    <container_id>08-12</container_id>
+    <volume>225</volume>
+    <fill_date>2009-12-01T00:00:00-05:00</fill_date>
+    <empty_date>1999-12-31T00:00:00-05:00</empty_date>
+  </bulk_wine>
+  <bulk_wine>
+    <id>4009127</id>
+    <blend_id>2009010</blend_id>
+    <container_id>08-14</container_id>
+    <volume>225</volume>
+    <fill_date>2009-12-01T00:00:00-05:00</fill_date>
+    <empty_date>2010-03-14T00:00:00-05:00</empty_date>
+  </bulk_wine>
+</VinhoDB>
